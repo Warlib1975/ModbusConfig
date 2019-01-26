@@ -1,0 +1,16 @@
+{
+  "name": "ModbusConfig",
+  "keywords": "modbus, configuration, RS485, config, JSON",
+  "description": "Modbus Config library for Arduino or ESP",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Warlib1975/ModbusConfig.git"
+  },
+  "version": "0.9",
+  "exclude": [
+    "*.png",
+    "*.zip"
+  ],
+  "frameworks": "arduino",
+  "platforms": "*"
+}
