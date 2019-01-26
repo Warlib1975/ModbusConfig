@@ -34,11 +34,40 @@
 #include "WProgram.h"
 #endif
 
+#include <ArduinoJson.h>
+
+
 /**
     @example ArduinoModbusConfig.ino
     Simple example of the ModbusConfig library. Load Modbus config from SPIFFS storage.  
 */
 
+void processError(int error);
+
+typedef struct{
+  int PollingInterval;
+  int UnitId;
+  int Function;
+  int Address;
+  int Len;
+  String DisplayName;
+} Operation;
+
+typedef std::vector<Operation> OperationsType;
+
+typedef struct{
+  String Connection;
+  String HwId;
+  int BaudRate;
+  int DataBits;
+  int StopBits;
+  String Parity;
+  String FlowControl;
+  int TcpPort;
+  OperationsType Operations;
+} Slave;
+
+typedef std::vector<Slave> Slaves;
 
 /**
      The ModbusConfig class.
@@ -61,13 +90,40 @@ class ModbusConfig
 
 
 /*!
-    @brief  Attach to a pin and sets that pin's mode (INPUT, INPUT_PULLUP or OUTPUT).
+    @brief  Parse Modbus Config JSON file.
             
     @param    json
               JSON file with modbus configuration.
     @return True if the JSON script parsed successfully, otherwise false.
 */
-    void parseModbusConfig(String json);
+    bool parseConfig(String json);
+    bool parseConfig();		
+
+/*!
+    @brief  Attach to a pin and sets that pin's mode (INPUT, INPUT_PULLUP or OUTPUT).
+            
+    @param    filename
+              JSON filename to load.
+    @return True if the JSON script parsed successfully, otherwise false.
+*/
+    bool loadConfig(char* filename);
+    bool loadConfig();
+
+
+/*
+    @brief   Initialize filesystem. 
+*/
+    bool initFS();
+
+/*
+    @brief   Format a filesystem. 
+*/
+    bool formatFS(); 
+
+/*
+    @brief   Show file list of the directory. 
+*/
+    void showDir();
 
 /*
     @brief   Convert char* string to int. 
@@ -76,15 +132,17 @@ class ModbusConfig
  
     @return  int with result of conversion.
 */
-
-    int StrToHex(const char* str)
+    int StrToHex(const char* str);
  
-    String filename;  
+    DynamicJsonDocument *doc;	
+    char* filename;  
     String json;	
 
  protected:
 
  private:
+    void printValue(String name, String value);
+    bool isSPIFFSInitialized; 
 };
 
 #endif
