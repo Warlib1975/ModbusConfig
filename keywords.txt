@@ -1,0 +1,23 @@
+#######################################
+# Syntax Coloring Map For ModbusConfig
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+ModbusConfig	KEYWORD1
+Slave		KEYWORD1
+Operation	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+parseConfig	KEYWORD2
+printConfig             KEYWORD2
+loopModbusConfig	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
