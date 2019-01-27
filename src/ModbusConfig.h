@@ -100,6 +100,12 @@ class ModbusConfig
     bool parseConfig(String json);
     bool parseConfig();		
 
+
+/*!
+    @brief  Print loaded and parsed config to Serial.
+*/
+    void printConfig();
+
 /*
     @brief   Convert char* string to int. 
     @param   str
@@ -112,11 +118,12 @@ class ModbusConfig
     DynamicJsonDocument *doc;	
     char* filename;  
     String json;	
-
+    Slaves slaves;
+ 
  protected:
 
  private:
-    void printValue(String name, String value);
+    void printValue(String name, String value, bool isHex = false);
 };
 
 #endif

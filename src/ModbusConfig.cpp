@@ -43,8 +43,6 @@ bool ModbusConfig::parseConfig()
 
 bool ModbusConfig::parseConfig(String json)
 {
-  Slaves slaves;
-    
   //DynamicJsonDocument doc;
   DeserializationError error = deserializeJson(*doc, json);
   if (error) {
@@ -74,20 +72,8 @@ bool ModbusConfig::parseConfig(String json)
     slaveItem.RetryInterval 	= slave["RetryInterval"].as<int>();
     slaveItem.TcpPort 		= slave["TcpPort"].as<int>();
 
-    printValue("Connection"	, slaveItem.Connection);
-    printValue("HwId"		, slaveItem.HwId);
-    printValue("PollingInterval", String(slaveItem.PollingInterval));
-    printValue("RxPin"		, String(slaveItem.RxPin));
-    printValue("TxPin"		, String(slaveItem.TxPin));
-    printValue("BaudRate"	, String(slaveItem.BaudRate));
-    printValue("Config"		, slaveItem.Config);
-    printValue("RetryCount"	, String(slaveItem.RetryCount));
-    printValue("RetryInterval"	, String(slaveItem.RetryInterval));
-    printValue("TcpPort"	, String(slaveItem.TcpPort));    
-
     JsonArray ops = arr[i]["Slave"]["Ops"];
     Operation operation;
-    Serial.println("---Operations:-------------------------"); 
     for (int i=0; i<ops.size(); i++) {
       JsonObject op = ops[i];
       operation.PollingInterval = op["PollingInterval"].as<int>();
@@ -99,24 +85,50 @@ bool ModbusConfig::parseConfig(String json)
       operation.Len 		= op["Len"].as<int>();
       operation.DisplayName 	= op["DisplayName"].as<String>();
       slaveItem.Operations.push_back(operation);
-
-      printValue("\tPollingInterval", String(operation.PollingInterval));
-      printValue("\tUnitId"	, String(operation.UnitId));
-      printValue("\tFunction"	, String(operation.Function));
-      printValue("\tAddress"	, String(operation.Address));
-      printValue("\tLen"	, String(operation.Len));
-      printValue("\tDisplayName", operation.DisplayName);
-      Serial.println("--------------------------------------"); 
     }
     slaves.push_back(slaveItem);
   }
   return true;
 }
 
-void ModbusConfig::printValue(String name, String value)
+void ModbusConfig::printConfig()
+{
+  for (const Slave& slave : slaves)
+  {
+    printValue("Connection"	, slave.Connection);
+    printValue("HwId"		, slave.HwId);
+    printValue("PollingInterval", String(slave.PollingInterval));
+    printValue("RxPin"		, String(slave.RxPin));
+    printValue("TxPin"		, String(slave.TxPin));
+    printValue("BaudRate"	, String(slave.BaudRate));
+    printValue("Config"		, slave.Config);
+    printValue("RetryCount"	, String(slave.RetryCount));
+    printValue("RetryInterval"	, String(slave.RetryInterval));
+    printValue("TcpPort"	, String(slave.TcpPort));
+    Serial.println("---Operations:-------------------------"); 
+    for (const Operation& operation : slave.Operations)	
+    {
+      printValue("\tPollingInterval", String(operation.PollingInterval));
+      printValue("\tUnitId"	, String(operation.UnitId));
+      printValue("\tFunction"	, String(operation.Function, HEX), true);
+      printValue("\tAddress"	, String(operation.Address, HEX), true);
+      printValue("\tLen"	, String(operation.Len));
+      printValue("\tDisplayName", operation.DisplayName);
+      Serial.println("--------------------------------------"); 
+    }	
+  }
+}
+
+//isHex default value is false
+void ModbusConfig::printValue(String name, String value, bool isHex)
 {
   if ((value != "null") && (value != "") && (value != "0")) //0 - default value for int 
   {
-    Serial.println(name + ": " + value);
+    String prefix = "";
+    if (isHex)
+    {
+      prefix = (value.length() == 1) ? "0x0" : "0x";
+    }
+    Serial.println(name + ": " + prefix + value);
   }
 }

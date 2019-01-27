@@ -10,8 +10,6 @@
 const size_t capacity = 2*JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(4) + Num_of_Ops*JSON_OBJECT_SIZE(6) + Num_of_Slaves*JSON_OBJECT_SIZE(8) + 830;
 StaticJsonDocument<capacity> doc;
 
-//DynamicJsonBuffer jsonBuffer(capacity);
-
 char* filename = "/modbus.cfg";
 
 ModbusConfig modbusCfg;
@@ -19,9 +17,6 @@ EspFS fileSystem;
 
 void readRS485Config()
 {
-  //DynamicJsonDocument *doc = 
-
-
   bool res = fileSystem.loadTextFile(filename);
   if (res)
   {
@@ -39,7 +34,10 @@ void processRS485Config(String json)
   autoProcess(json);
   Serial.println(); 
   Serial.println("---Manual processing-----------------"); 
-  modbusCfg.parseConfig(json);
+  if (modbusCfg.parseConfig(json))
+  {
+    modbusCfg.printConfig();
+  }
 }
 
 void autoProcess(String json)
@@ -63,7 +61,8 @@ void autoProcess(String json)
   }*/
 
   Serial.println("--------------------------------------"); 
-  for (const JsonObject& item : arr) {
+  for (const JsonObject& item : arr) 
+  {
     const JsonObject& slaves = item["Slave"];
     //printValue("Connection", slave["Connection"].as<String>());
     for (const JsonPair& slave : slaves) {
