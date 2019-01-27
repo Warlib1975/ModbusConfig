@@ -71,6 +71,12 @@ bool ModbusConfig::parseConfig(String json)
     slaveItem.RetryCount 	= slave["RetryCount"].as<int>();
     slaveItem.RetryInterval 	= slave["RetryInterval"].as<int>();
     slaveItem.TcpPort 		= slave["TcpPort"].as<int>();
+    slaveItem.lastPolling	= 0;
+
+    /*if (minSlavePollingInterval > slaveItem.PollingInterval)
+    { 
+      minSlavePollingInterval = slaveItem.PollingInterval; 
+    }*/	
 
     JsonArray ops = arr[i]["Slave"]["Ops"];
     Operation operation;
@@ -84,11 +90,44 @@ bool ModbusConfig::parseConfig(String json)
       operation.Address 	= StrToHex(address);
       operation.Len 		= op["Len"].as<int>();
       operation.DisplayName 	= op["DisplayName"].as<String>();
+      operation.lastPolling	= 0;
       slaveItem.Operations.push_back(operation);
     }
     slaves.push_back(slaveItem);
   }
   return true;
+}
+
+void ModbusConfig::loopModbusConfig()
+{
+  unsigned long currentMillis = millis();
+  //if (currentMillis - lastPolling > minSlavePollingInterval)
+  //{
+  for (Slave& slave : this->slaves)
+  {
+    if (currentMillis - slave.lastPolling >= slave.PollingInterval)
+    {
+      if (this->pollingIntervalCallback)
+      {
+        pollingIntervalCallback(&slave, NULL); //Execute callback function to process slave polling interval
+      }
+      slave.lastPolling = currentMillis;
+    }
+
+    for (Operation& operation : slave.Operations)	
+    {
+      if (currentMillis - operation.lastPolling >= operation.PollingInterval)
+      {
+       if (this->pollingIntervalCallback) 
+       {
+          pollingIntervalCallback(&slave, &operation); //Execute callback function to process operation polling interval
+       }
+       operation.lastPolling = currentMillis;
+      }
+    }	
+  }
+  //lastPolling = currentMillis;
+  //}
 }
 
 void ModbusConfig::printConfig()

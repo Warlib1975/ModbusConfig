@@ -44,11 +44,12 @@
 bool processJsonError(int error);
 
 typedef struct{
-  int PollingInterval;  //default 4000
+  int PollingInterval;  //default 
+  unsigned long lastPolling; //
   int UnitId;
   int Function;
   int Address;
-  int Len;        	//default 1
+  int Len;        	//default 
   String DisplayName;
 } Operation;
 
@@ -56,19 +57,25 @@ typedef std::vector<Operation> OperationsType;
 
 typedef struct{
   String Connection;
-  int RxPin;           	//default -1
-  int TxPin;            //default -1
-  int RetryCount;    	//default 10
-  int RetryInterval; 	//default 50 ms
-  int PollingInterval; 	//default 4000
+  int RxPin;           	//default 
+  int TxPin;            //default 
+  int RetryCount;    	//default 
+  int RetryInterval; 	//default 
+  int PollingInterval; 	//default 
+  unsigned long lastPolling; //
   String HwId;
-  int BaudRate; 	//default 9600
+  int BaudRate; 	//default 
   String Config; 	//default SERIAL_8N1
-  int TcpPort; 		//default 502
+  int TcpPort; 		//default 
   OperationsType Operations;
 } Slave;
 
 typedef std::vector<Slave> Slaves;
+
+/*
+    @brief  Callback function to process an operation polling interval.
+*/
+typedef void (*PHandler)(Slave* slave, Operation* operation);
 
 /**
      The ModbusConfig class.
@@ -81,7 +88,6 @@ class ModbusConfig
     @brief  Create an instance of the ModbusConfig class.
 
     @code
-
     // Create an instance of the ModbusConfig class.
     ModbusConfig() modbus;
 
@@ -106,6 +112,12 @@ class ModbusConfig
 */
     void printConfig();
 
+/*!
+    @brief  Polling interval periodical checker and callback function executer if some operation should be processed.
+*/
+    void loopModbusConfig();
+
+
 /*
     @brief   Convert char* string to int. 
     @param   str
@@ -115,6 +127,7 @@ class ModbusConfig
 */
     int StrToHex(const char* str);
  
+    PHandler pollingIntervalCallback;
     DynamicJsonDocument *doc;	
     char* filename;  
     String json;	
@@ -123,7 +136,10 @@ class ModbusConfig
  protected:
 
  private:
+    //unsigned int minSlavePollingInterval = 0;
+    //unsigned int lastPolling = 0;
     void printValue(String name, String value, bool isHex = false);
+
 };
 
 #endif

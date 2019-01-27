@@ -4,23 +4,39 @@
 #include "EspFS.h";
 
 #define Num_of_Slaves 2 //Number of serial ports on the board
-#define Num_of_Ops     5 //Number of operations per serial port 
+#define Num_of_Ops    5 //Number of operations per serial port 
 
 //30 - is the maximum number of possible operations  
-const size_t capacity = 2*JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(4) + Num_of_Ops*JSON_OBJECT_SIZE(6) + Num_of_Slaves*JSON_OBJECT_SIZE(8) + 830;
+const size_t capacity = 2*JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(4) + Num_of_Ops*JSON_OBJECT_SIZE(6) + Num_of_Slaves*JSON_OBJECT_SIZE(11) + 830;
 StaticJsonDocument<capacity> doc;
 
-char* filename = "/modbus.cfg";
+char* filename = "/modbus.cfg"; //You should upload the file to SPDIFF using the tool: https://github.com/esp8266/arduino-esp8266fs-plugin
 
 ModbusConfig modbusCfg;
 EspFS fileSystem;
 
-void readRS485Config()
+//Callback function to process polling interval
+void pollingIntervalProcessor(Slave* slave, Operation* operation)
+{
+  if (slave)
+  {
+     if (operation == NULL)
+     {
+       Serial.println("Publish to the cloud. Slave connection is [" + String(slave->Connection) + "]. HwId: [" + String(slave->HwId) + "].");
+     }
+     else
+     {
+       Serial.println("Operation with name [" + String(operation->DisplayName) + "] has executed. Function: [0x0" + String(operation->Function, HEX) + "]. Address: [0x0" + String(operation->Address, HEX) + "].");
+     }
+  }
+}
+
+void readModbusConfig()
 {
   bool res = fileSystem.loadTextFile(filename);
   if (res)
   {
-    processRS485Config(fileSystem.text);
+    processModbusConfig(fileSystem.text);
   }
   else
   {
@@ -28,21 +44,19 @@ void readRS485Config()
   }
 }
 
-void processRS485Config(String json)
+void processModbusConfig(String json)
 {
-  Serial.println("---Auto processing--------------------"); 
-  autoProcess(json);
+  jsonParsing(json);
   Serial.println(); 
-  Serial.println("---Manual processing-----------------"); 
+  Serial.println("---ModbusConfig processing------------"); 
   if (modbusCfg.parseConfig(json))
   {
     modbusCfg.printConfig();
   }
 }
 
-void autoProcess(String json)
+void jsonParsing(String json)
 {
-  //DynamicJsonDocument doc;
   DeserializationError error = deserializeJson(doc, json);
   if (error) {
     processJsonError(error.code());
@@ -60,17 +74,15 @@ void autoProcess(String json)
     printValue("Connection", slave["Connection"].as<String>());
   }*/
 
-  Serial.println("--------------------------------------"); 
+  Serial.println("---JSON parsing--------------------"); 
   for (const JsonObject& item : arr) 
   {
     const JsonObject& slaves = item["Slave"];
-    //printValue("Connection", slave["Connection"].as<String>());
     for (const JsonPair& slave : slaves) {
       String key = slave.key().c_str();
-      if (slave.value().is<JsonArray>())
-      {
+      if (slave.value().is<JsonArray>()) {
         JsonArray operations = slave.value().as<JsonArray>();
-        Serial.println("---Operations:-------------------------"); 
+        Serial.println("---Operations:----------------------------"); 
         for (const JsonObject& operation : operations) {
           for (const JsonPair& op : operation) {
             key = op.key().c_str();
@@ -79,17 +91,11 @@ void autoProcess(String json)
           Serial.println("--------------------------------------"); 
         }
       }
-      else
-      {
+      else {
         Serial.println(key + ": " + slave.value().as<String>());
       }
     }
   }
-}
-
-void printResult()
-{
-  JsonObject res;
 }
 
 void setup()
@@ -97,14 +103,13 @@ void setup()
   Serial.begin(9600, SERIAL_8N1);
   
   modbusCfg.doc = new DynamicJsonDocument(capacity);
+  modbusCfg.pollingIntervalCallback = &pollingIntervalProcessor;
+
   fileSystem.showDir();
-  
-  //showDir();
-  //showDir1();
-  
-  readRS485Config();
+  readModbusConfig();
 }
 
 void loop()
 {
+  modbusCfg.loopModbusConfig();
 }
