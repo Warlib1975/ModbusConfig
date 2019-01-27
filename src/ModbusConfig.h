@@ -36,20 +36,19 @@
 
 #include <ArduinoJson.h>
 
-
 /**
     @example ArduinoModbusConfig.ino
-    Simple example of the ModbusConfig library. Load Modbus config from SPIFFS storage.  
+    Simple example of the ModbusConfig library.   
 */
 
-void processError(int error);
+bool processJsonError(int error);
 
 typedef struct{
-  int PollingInterval;
+  int PollingInterval;  //default 4000
   int UnitId;
   int Function;
   int Address;
-  int Len;
+  int Len;        	//default 1
   String DisplayName;
 } Operation;
 
@@ -57,13 +56,15 @@ typedef std::vector<Operation> OperationsType;
 
 typedef struct{
   String Connection;
+  int RxPin;           	//default -1
+  int TxPin;            //default -1
+  int RetryCount;    	//default 10
+  int RetryInterval; 	//default 50 ms
+  int PollingInterval; 	//default 4000
   String HwId;
-  int BaudRate;
-  int DataBits;
-  int StopBits;
-  String Parity;
-  String FlowControl;
-  int TcpPort;
+  int BaudRate; 	//default 9600
+  String Config; 	//default SERIAL_8N1
+  int TcpPort; 		//default 502
   OperationsType Operations;
 } Slave;
 
@@ -99,32 +100,6 @@ class ModbusConfig
     bool parseConfig(String json);
     bool parseConfig();		
 
-/*!
-    @brief  Attach to a pin and sets that pin's mode (INPUT, INPUT_PULLUP or OUTPUT).
-            
-    @param    filename
-              JSON filename to load.
-    @return True if the JSON script parsed successfully, otherwise false.
-*/
-    bool loadConfig(char* filename);
-    bool loadConfig();
-
-
-/*
-    @brief   Initialize filesystem. 
-*/
-    bool initFS();
-
-/*
-    @brief   Format a filesystem. 
-*/
-    bool formatFS(); 
-
-/*
-    @brief   Show file list of the directory. 
-*/
-    void showDir();
-
 /*
     @brief   Convert char* string to int. 
     @param   str
@@ -142,7 +117,6 @@ class ModbusConfig
 
  private:
     void printValue(String name, String value);
-    bool isSPIFFSInitialized; 
 };
 
 #endif
