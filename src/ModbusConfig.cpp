@@ -53,7 +53,7 @@ bool ModbusConfig::parseConfig(String json)
     return false;
   }
 
-  JsonObject obj = doc->as<JsonObject>();
+  //JsonObject obj = doc->as<JsonObject>();
   JsonArray arr = doc->as<JsonArray>();
 
   //Serial.println("--------------------------------------"); 
