@@ -47,17 +47,9 @@ void pollingIntervalProcessor(Slave* slave, Operation* operation)
      {
        Serial.println("Operation with name [" + String(operation->DisplayName) + "] has executed. Function: [0x0" + String(operation->Function, HEX) + "]. Address: [0x0" + String(operation->Address, HEX) + "].");
      }
-     Serial.printf("Connector: %p\n", slave->Connector);
+     //Serial.printf("Connector: %p\n", slave->Connector);
      ModbusConnector* p = static_cast<ModbusConnector*>(slave->Connector);
-     if (p)
-     {
-        Serial.print("Slave str: [");
-        Serial.println(String(p->str) + "].");
-     }
-     else
-     {
-        Serial.println("P is null");
-     }
+     Serial.println("Slave str: [" + (p->str) + "].");
   }
 }
 
@@ -91,16 +83,36 @@ void processModbusConfig(String json)
         modbusRTU.modbus = new ModbusMaster();
         modbusRTU.modbus->begin(Slave_ID, *modbusRTU.serial);
         modbusRTU.str = "Test" + String(i);
-        Serial.println("String: " + modbusRTU.str);
-        Serial.printf(" with address %p\n", slave.Connector);
         connectors.push_back(modbusRTU);
-        slave.Connector = &connectors.back();
+        slave.Connector = &connectors.front();
+        void* p = &connectors.front();
+        Serial.print("String: " + modbusRTU.str);
+        Serial.printf(" with back() = %p and front() = %p\n", slave.Connector, p);
+        i++;
       }
-    }
+     }
+
+     /*int j = 0;
+     for (ModbusConnector& connector : connectors)
+      {
+        Serial.print("String: " + connector.str);
+        Serial.printf(" with address %p\n", &connector);
+        modbusCfg.slaves[j].Connector = &connector;
+        j++;
+      }*/    
+
+    connectors.shrink_to_fit();
+    
     for (ModbusConnector& modbusRTU : connectors)
     {
-      Serial.println("String: " + modbusRTU.str);
+      Serial.print("String: " + modbusRTU.str);
       Serial.printf(" with address %p\n", &modbusRTU);
+    }
+    for (Slave& slave : modbusCfg.slaves)
+    {
+     ModbusConnector* p = static_cast<ModbusConnector*>(slave.Connector);
+     Serial.print("Slave str: [" + (p->str) + "].");
+     Serial.printf(" with address %p\n", slave.Connector);
     }
   }
 }

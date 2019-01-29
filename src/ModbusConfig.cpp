@@ -126,7 +126,8 @@ void ModbusConfig::loopModbusConfig()
        }
        operation.lastPolling = currentMillis;
       }
-    }	
+    }
+    this->slaves.shrink_to_fit(); //free unused memory	
   }
   //lastPolling = currentMillis;
   //}
