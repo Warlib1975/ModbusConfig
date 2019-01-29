@@ -55,7 +55,11 @@ typedef struct{
 
 typedef std::vector<Operation> OperationsType;
 
+enum ModbusType { RTU, TCP, NONE };
+
 typedef struct{
+  void* Connector;
+  ModbusType Type;
   String Connection;
   int RxPin;           	//default 
   int TxPin;            //default 

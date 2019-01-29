@@ -103,7 +103,7 @@ void setup()
   Serial.begin(9600, SERIAL_8N1);
   
   modbusCfg.doc = new DynamicJsonDocument(capacity);
-  modbusCfg.pollingIntervalCallback = &pollingIntervalProcessor;
+  modbusCfg.pollingIntervalCallback = *pollingIntervalProcessor;
 
   fileSystem.showDir();
   readModbusConfig();

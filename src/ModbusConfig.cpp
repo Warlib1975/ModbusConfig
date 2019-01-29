@@ -61,13 +61,15 @@ bool ModbusConfig::parseConfig(String json)
     JsonObject slave = arr[i]["Slave"];
     Slave slaveItem; 
     slaveItem.Connection 	= slave["Connection"].as<String>();
+    String type 		= slave["Type"].as<String>();
+    slaveItem.Type		= (type == "TCP") ? ModbusType::TCP : ModbusType::RTU;
     slaveItem.PollingInterval 	= slave["PollingInterval"].as<int>();
     slaveItem.HwId 		= slave["HwId"].as<String>();
     slaveItem.BaudRate 		= slave["BaudRate"].as<int>();
     slaveItem.Config 		= slave["Config"].as<String>();
     slaveItem.Config 		= (slaveItem.Config == "") ? "SERIAL_8N1" : slaveItem.Config;
-    slaveItem.RxPin 		= slave["RxPin"].as<int>();
-    slaveItem.TxPin 		= slave["TxPin"].as<int>();
+    slaveItem.RxPin 		= slave["RxPin"].as<int>(); // default value doesnt't work in v.6 beta | -1;
+    slaveItem.TxPin 		= slave["TxPin"].as<int>(); // default value doesnt't work in v.6 beta | -1;
     slaveItem.RetryCount 	= slave["RetryCount"].as<int>();
     slaveItem.RetryInterval 	= slave["RetryInterval"].as<int>();
     slaveItem.TcpPort 		= slave["TcpPort"].as<int>();
@@ -84,16 +86,16 @@ bool ModbusConfig::parseConfig(String json)
       JsonObject op = ops[i];
       operation.PollingInterval = op["PollingInterval"].as<int>();
       operation.UnitId 		= op["UnitId"].as<int>();
-      const char* function 	= op["Function"].as<char*>();
-      operation.Function 	= StrToHex(function);
-      const char* address 	= op["Address"].as<char*>();
-      operation.Address 	= StrToHex(address);
+      //const char* function 	= op["Function"].as<char*>();
+      operation.Function 	= op["Function"].as<int>(); //StrToHex(function);
+      //const char* address 	= op["Address"].as<char*>();
+      operation.Address 	= op["Address"].as<int>(); //StrToHex(address);
       operation.Len 		= op["Len"].as<int>();
       operation.DisplayName 	= op["DisplayName"].as<String>();
       operation.lastPolling	= 0;
       slaveItem.Operations.push_back(operation);
     }
-    slaves.push_back(slaveItem);
+    this->slaves.push_back(slaveItem);
   }
   return true;
 }
@@ -135,6 +137,8 @@ void ModbusConfig::printConfig()
   for (const Slave& slave : slaves)
   {
     printValue("Connection"	, slave.Connection);
+    String type = (slave.Type == ModbusType::TCP) ? "TCP" : "RTU";
+    printValue("Type"		, type);
     printValue("HwId"		, slave.HwId);
     printValue("PollingInterval", String(slave.PollingInterval));
     printValue("RxPin"		, String(slave.RxPin));

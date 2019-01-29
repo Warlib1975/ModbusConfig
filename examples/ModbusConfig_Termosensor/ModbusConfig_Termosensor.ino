@@ -15,14 +15,24 @@ StaticJsonDocument<capacity> doc;
 char* filename = "/modbus.cfg"; //You should upload the file to SPDIFF using the tool: https://github.com/esp8266/arduino-esp8266fs-
 
 typedef struct{
-  SoftwareSerial serial;  //default 
-  ModbusMaster modbus;          //default 
-} ModbusRTUSerial;
+  SoftwareSerial *serial;  //default 
+  ModbusMaster *modbus;          //default 
+  String str;
+} ModbusConnector;
 
-typedef std::vector<ModbusRTUSerial> modbusRTUSerials;
+typedef std::vector<ModbusConnector> ModbusConnectors;
+
+#define Slave_ID    1 
+#define RX_PIN      15  //D8
+#define TX_PIN      13  //D7
+
+// instantiate ModbusMaster object
+ModbusMaster node;
 
 ModbusConfig modbusCfg;
 EspFS fileSystem;
+
+ModbusConnectors connectors;
 
 //Callback function to process polling interval
 void pollingIntervalProcessor(Slave* slave, Operation* operation)
@@ -36,6 +46,17 @@ void pollingIntervalProcessor(Slave* slave, Operation* operation)
      else
      {
        Serial.println("Operation with name [" + String(operation->DisplayName) + "] has executed. Function: [0x0" + String(operation->Function, HEX) + "]. Address: [0x0" + String(operation->Address, HEX) + "].");
+     }
+     Serial.printf("Connector: %p\n", slave->Connector);
+     ModbusConnector* p = static_cast<ModbusConnector*>(slave->Connector);
+     if (p)
+     {
+        Serial.print("Slave str: [");
+        Serial.println(String(p->str) + "].");
+     }
+     else
+     {
+        Serial.println("P is null");
      }
   }
 }
@@ -58,6 +79,29 @@ void processModbusConfig(String json)
   if (modbusCfg.parseConfig(json))
   {
     modbusCfg.printConfig();
+
+    int i = 0;
+    for (Slave& slave : modbusCfg.slaves)
+    {
+      if (slave.Type == ModbusType::RTU)
+      {
+        ModbusConnector modbusRTU;
+        modbusRTU.serial = new SoftwareSerial(slave.RxPin, slave.TxPin, false, 128);
+        modbusRTU.serial->begin(slave.BaudRate);
+        modbusRTU.modbus = new ModbusMaster();
+        modbusRTU.modbus->begin(Slave_ID, *modbusRTU.serial);
+        modbusRTU.str = "Test" + String(i);
+        Serial.println("String: " + modbusRTU.str);
+        Serial.printf(" with address %p\n", slave.Connector);
+        connectors.push_back(modbusRTU);
+        slave.Connector = &connectors.back();
+      }
+    }
+    for (ModbusConnector& modbusRTU : connectors)
+    {
+      Serial.println("String: " + modbusRTU.str);
+      Serial.printf(" with address %p\n", &modbusRTU);
+    }
   }
 }
 
@@ -75,14 +119,13 @@ void setup()
 
   
   modbusCfg.doc = new DynamicJsonDocument(capacity);
-  modbusCfg.pollingIntervalCallback = &pollingIntervalProcessor;
+  modbusCfg.pollingIntervalCallback = *pollingIntervalProcessor;
 
   fileSystem.showDir();
   readModbusConfig();
 
   
-  ModbusRTUSerial modbusRTU;
-  modbusRTU->serial = new swSer(RX_PIN, TX_PIN, false, 128);
+  //modbusRTU.serial = &swSer;
 }
 
 void loop()
