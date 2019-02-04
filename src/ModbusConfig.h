@@ -28,11 +28,7 @@
 #ifndef ModbusConfig_h
 #define ModbusConfig_h
 
-#if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
-#else
-#include "WProgram.h"
-#endif
 
 #include <ArduinoJson.h>
 
@@ -46,7 +42,8 @@ bool processJsonError(int error);
 typedef struct{
   int PollingInterval;  //default 
   unsigned long lastPolling; //
-  int UnitId;
+  int SlaveId;
+  void* Modbus;
   int Function;
   int Address;
   int Len;        	//default 

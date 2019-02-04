@@ -28,12 +28,7 @@
 #ifndef EspFS_h
 #define EspFS_h
 
-#if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
-#else
-#include "WProgram.h"
-#endif
-
 #include <FS.h>   //http://esp8266.github.io/Arduino/versions/2.0.0/doc/filesystem.html
 
 class EspFS

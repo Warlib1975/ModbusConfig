@@ -85,7 +85,7 @@ bool ModbusConfig::parseConfig(String json)
     for (int i=0; i<ops.size(); i++) {
       JsonObject op = ops[i];
       operation.PollingInterval = op["PollingInterval"].as<int>();
-      operation.UnitId 		= op["UnitId"].as<int>();
+      operation.SlaveId 	= op["SlaveId"].as<int>();
       //const char* function 	= op["Function"].as<char*>();
       operation.Function 	= op["Function"].as<int>(); //StrToHex(function);
       //const char* address 	= op["Address"].as<char*>();
@@ -153,7 +153,7 @@ void ModbusConfig::printConfig()
     for (const Operation& operation : slave.Operations)	
     {
       printValue("\tPollingInterval", String(operation.PollingInterval));
-      printValue("\tUnitId"	, String(operation.UnitId));
+      printValue("\tSlaveId"	, String(operation.SlaveId));
       printValue("\tFunction"	, String(operation.Function, HEX), true);
       printValue("\tAddress"	, String(operation.Address, HEX), true);
       printValue("\tLen"	, String(operation.Len));
