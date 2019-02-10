@@ -16,13 +16,13 @@ ModbusConfig modbusCfg;
 EspFS fileSystem;
 
 //Callback function to process polling interval
-void pollingIntervalProcessor(Slave* slave, Operation* operation)
+void pollingIntervalProcessor(Connection* connection, Operation* operation)
 {
-  if (slave)
+  if (connection)
   {
      if (operation == NULL)
      {
-       Serial.println("Publish to the cloud. Slave connection is [" + String(slave->Connection) + "]. HwId: [" + String(slave->HwId) + "].");
+       Serial.println("Publish to the cloud. Slave connection is [" + String(connection->Connection) + "]. HwId: [" + String(connection->HwId) + "].");
      }
      else
      {
@@ -77,11 +77,11 @@ void jsonParsing(String json)
   Serial.println("---JSON parsing--------------------"); 
   for (const JsonObject& item : arr) 
   {
-    const JsonObject& slaves = item["Slave"];
-    for (const JsonPair& slave : slaves) {
-      String key = slave.key().c_str();
-      if (slave.value().is<JsonArray>()) {
-        JsonArray operations = slave.value().as<JsonArray>();
+    const JsonObject& connections = item["Connection"];
+    for (const JsonPair& connection : connections) {
+      String key = connection.key().c_str();
+      if (connection.value().is<JsonArray>()) {
+        JsonArray operations = connection.value().as<JsonArray>();
         Serial.println("---Operations:----------------------------"); 
         for (const JsonObject& operation : operations) {
           for (const JsonPair& op : operation) {
@@ -92,7 +92,7 @@ void jsonParsing(String json)
         }
       }
       else {
-        Serial.println(key + ": " + slave.value().as<String>());
+        Serial.println(key + ": " + connection.value().as<String>());
       }
     }
   }

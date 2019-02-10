@@ -9,11 +9,11 @@
 #include "ModbusMaster.h"
 #include <SoftwareSerial.h>
 
-#define Num_of_Slaves 2 //Number of serial ports on the board
+#define Num_of_Connections 2 //Number of serial ports on the board
 #define Num_of_Ops    5 //Number of operations per serial port 
 
 //30 - is the maximum number of possible operations  
-const size_t capacity = 2*JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(4) + Num_of_Ops*JSON_OBJECT_SIZE(6) + Num_of_Slaves*JSON_OBJECT_SIZE(11) + 830;
+const size_t capacity = 2*JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(4) + Num_of_Ops*JSON_OBJECT_SIZE(6) + Num_of_Connections*JSON_OBJECT_SIZE(11) + 830;
 StaticJsonDocument<capacity> doc;
 
 char* filename = "/modbus.cfg"; //You should upload the file to SPIFFS using the tool: https://github.com/esp8266/arduino-esp8266fs-plugin
@@ -96,13 +96,13 @@ EspFS fileSystem;
 ModbusRTUConnector* Connector;
 
 //Callback function to process polling interval
-void pollingIntervalProcessor(Slave* slave, Operation* operation)
+void pollingIntervalProcessor(Connection* connection, Operation* operation)
 {
-  if (slave)
+  if (connection)
   {
      if (operation == NULL)
      {
-       Serial.println("Publish telemetry data to the cloud. Slave connection is [" + String(slave->Connection) + "]. HwId: [" + String(slave->HwId) + "].");
+       Serial.println("Publish telemetry data to the cloud. Slave connection is [" + String(connection->Connection) + "]. HwId: [" + String(connection->HwId) + "].");
      }
      else
      {
@@ -134,17 +134,17 @@ void processModbusConfig(String json)
     Connector = new ModbusRTUConnector();
     
     int i = 0;
-    for (Slave& slave : modbusCfg.slaves)  //Only one Slave settings supported in the example
+    for (Connection& connection : modbusCfg.connections)  //Only one Slave settings supported in the example
     {
-      if (slave.Type == ModbusType::RTU)
+      if (connection.Type == ModbusType::RTU)
       {
-        Connector->serial = new SoftwareSerialEx(slave.RxPin, slave.TxPin, false, 256); 
-        Connector->serial->begin(slave.BaudRate);
-        Connector->serial->BaudRate = slave.BaudRate;
-        Connector->serial->RxPin = slave.RxPin;
-        Connector->serial->TxPin = slave.TxPin;
+        Connector->serial = new SoftwareSerialEx(connection.RxPin, connection.TxPin, false, 256); 
+        Connector->serial->begin(connection.BaudRate);
+        Connector->serial->BaudRate = connection.BaudRate;
+        Connector->serial->RxPin = connection.RxPin;
+        Connector->serial->TxPin = connection.TxPin;
         ModbusConnectors* connectors = new ModbusConnectors();  
-        for (Operation& operation : slave.Operations)
+        for (Operation& operation : connection.Operations)
         {
           ModbusMasterEx* modbus = new ModbusMasterEx();
           modbus->begin(operation.SlaveId, *Connector->serial);
@@ -153,7 +153,7 @@ void processModbusConfig(String json)
           connectors->push_back(modbus);
         }
         Connector->Connectors = connectors;
-        slave.Connector = Connector;
+        connection.Connector = Connector;
       }
     }
   }
@@ -166,7 +166,8 @@ void setup() {
   modbusCfg.pollingIntervalCallback = *pollingIntervalProcessor;
 
   Serial.println("Try to read Modbus config");
-  readModbusConfig();}
+  readModbusConfig();
+}
 
 void loop() {
   modbusCfg.loopModbusConfig();

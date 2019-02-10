@@ -58,44 +58,44 @@ bool ModbusConfig::parseConfig(String json)
 
   //Serial.println("--------------------------------------"); 
   for (int i=0; i<arr.size(); i++) {
-    JsonObject slave = arr[i]["Slave"];
-    Slave slaveItem; 
-    slaveItem.Connection 	= slave["Connection"].as<String>();
-    String type 		= slave["Type"].as<String>();
-    slaveItem.Type		= (type == "TCP") ? ModbusType::TCP : ModbusType::RTU;
-    slaveItem.PollingInterval 	= slave["PollingInterval"].as<int>();
-    slaveItem.HwId 		= slave["HwId"].as<String>();
-    slaveItem.BaudRate 		= slave["BaudRate"].as<int>();
-    slaveItem.Config 		= slave["Config"].as<String>();
-    slaveItem.Config 		= (slaveItem.Config == "") ? "SERIAL_8N1" : slaveItem.Config;
-    slaveItem.RxPin 		= slave["RxPin"].as<int>(); // default value doesnt't work in v.6 beta | -1;
-    slaveItem.TxPin 		= slave["TxPin"].as<int>(); // default value doesnt't work in v.6 beta | -1;
-    slaveItem.RetryCount 	= slave["RetryCount"].as<int>();
-    slaveItem.RetryInterval 	= slave["RetryInterval"].as<int>();
-    slaveItem.TcpPort 		= slave["TcpPort"].as<int>();
-    slaveItem.lastPolling	= 0;
+    JsonObject connectionJSON = arr[i]["Connection"];
+    Connection connection; 
+    connection.Connection 	  = connectionJSON["Connection"].as<String>();
+    String type 		          = connectionJSON["Type"].as<String>();
+    connection.Type		        = (type == "TCP") ? ModbusType::TCP : ModbusType::RTU;
+    connection.PollingInterval 	= connectionJSON["PollingInterval"].as<int>();
+    connection.HwId 		      = connectionJSON["HwId"].as<String>();
+    connection.BaudRate 		  = connectionJSON["BaudRate"].as<int>();
+    connection.Config 		    = connectionJSON["Config"].as<String>();
+    connection.Config 		    = (connection.Config == "") ? "SERIAL_8N1" : connection.Config;
+    connection.RxPin 		      = connectionJSON["RxPin"].as<int>(); // default value doesnt't work in v.6 beta | -1;
+    connection.TxPin 		      = connectionJSON["TxPin"].as<int>(); // default value doesnt't work in v.6 beta | -1;
+    connection.RetryCount 	  = connectionJSON["RetryCount"].as<int>();
+    connection.RetryInterval 	= connectionJSON["RetryInterval"].as<int>();
+    connection.TcpPort 		    = connectionJSON["TcpPort"].as<int>();
+    connection.lastPolling	= 0;
 
-    /*if (minSlavePollingInterval > slaveItem.PollingInterval)
+    /*if (minconnectionPollingInterval > connection.PollingInterval)
     { 
-      minSlavePollingInterval = slaveItem.PollingInterval; 
+      minconnectionPollingInterval = connection.PollingInterval; 
     }*/	
 
-    JsonArray ops = arr[i]["Slave"]["Ops"];
+    JsonArray ops = arr[i]["Connection"]["Ops"];
     Operation operation;
     for (int i=0; i<ops.size(); i++) {
-      JsonObject op = ops[i];
-      operation.PollingInterval = op["PollingInterval"].as<int>();
-      operation.SlaveId 	= op["SlaveId"].as<int>();
-      //const char* function 	= op["Function"].as<char*>();
-      operation.Function 	= op["Function"].as<int>(); //StrToHex(function);
-      //const char* address 	= op["Address"].as<char*>();
-      operation.Address 	= op["Address"].as<int>(); //StrToHex(address);
-      operation.Len 		= op["Len"].as<int>();
-      operation.DisplayName 	= op["DisplayName"].as<String>();
-      operation.lastPolling	= 0;
-      slaveItem.Operations.push_back(operation);
+      JsonObject operationJSON = ops[i];
+      operation.PollingInterval = operationJSON["PollingInterval"].as<int>();
+      operation.SlaveId 	      = operationJSON["SlaveId"].as<int>();
+      //const char* function 	  = operationJSON["Function"].as<char*>();
+      operation.Function 	      = operationJSON["Function"].as<int>(); //StrToHex(function);
+      //const char* address 	  = operationJSON["Address"].as<char*>();
+      operation.Address 	      = operationJSON["Address"].as<int>(); //StrToHex(address);
+      operation.Len 		        = operationJSON["Len"].as<int>();
+      operation.DisplayName 	  = operationJSON["DisplayName"].as<String>();
+      operation.lastPolling	    = 0;
+      connection.Operations.push_back(operation);
     }
-    this->slaves.push_back(slaveItem);
+    this->connections.push_back(connection);
   }
   return true;
 }
@@ -103,31 +103,31 @@ bool ModbusConfig::parseConfig(String json)
 void ModbusConfig::loopModbusConfig()
 {
   unsigned long currentMillis = millis();
-  //if (currentMillis - lastPolling > minSlavePollingInterval)
+  //if (currentMillis - lastPolling > minconnectionPollingInterval)
   //{
-  for (Slave& slave : this->slaves)
+  for (Connection& connectionJSON : this->connections)
   {
-    if (currentMillis - slave.lastPolling >= slave.PollingInterval)
+    if (currentMillis - connectionJSON.lastPolling >= connectionJSON.PollingInterval)
     {
       if (this->pollingIntervalCallback)
       {
-        pollingIntervalCallback(&slave, NULL); //Execute callback function to process slave polling interval
+        pollingIntervalCallback(&connectionJSON, NULL); //Execute callback function to process connectionJSON polling interval
       }
-      slave.lastPolling = currentMillis;
+      connectionJSON.lastPolling = currentMillis;
     }
 
-    for (Operation& operation : slave.Operations)	
+    for (Operation& operation : connectionJSON.Operations)	
     {
       if (currentMillis - operation.lastPolling >= operation.PollingInterval)
       {
        if (this->pollingIntervalCallback) 
        {
-          pollingIntervalCallback(&slave, &operation); //Execute callback function to process operation polling interval
+          pollingIntervalCallback(&connectionJSON, &operation); //Execute callback function to process operation polling interval
        }
        operation.lastPolling = currentMillis;
       }
     }
-    this->slaves.shrink_to_fit(); //free unused memory	
+    this->connections.shrink_to_fit(); //free unused memory	
   }
   //lastPolling = currentMillis;
   //}
@@ -135,22 +135,23 @@ void ModbusConfig::loopModbusConfig()
 
 void ModbusConfig::printConfig()
 {
-  for (const Slave& slave : slaves)
+  for (const Connection& connection : connections)
   {
-    printValue("Connection"	, slave.Connection);
-    String type = (slave.Type == ModbusType::TCP) ? "TCP" : "RTU";
+    printValue("Connection"	, connection.Connection);
+    String type = (connection.Type == ModbusType::TCP) ? "TCP" : "RTU";
     printValue("Type"		, type);
-    printValue("HwId"		, slave.HwId);
-    printValue("PollingInterval", String(slave.PollingInterval));
-    printValue("RxPin"		, String(slave.RxPin));
-    printValue("TxPin"		, String(slave.TxPin));
-    printValue("BaudRate"	, String(slave.BaudRate));
-    printValue("Config"		, slave.Config);
-    printValue("RetryCount"	, String(slave.RetryCount));
-    printValue("RetryInterval"	, String(slave.RetryInterval));
-    printValue("TcpPort"	, String(slave.TcpPort));
+    printValue("HwId"		, connection.HwId);
+    printValue("PollingInterval", String(connection.PollingInterval));
+    printValue("RxPin"		, String(connection.RxPin));
+    printValue("TxPin"		, String(connection.TxPin));
+    printValue("BaudRate"	, String(connection.BaudRate));
+    printValue("Config"		, connection.Config);
+    printValue("RetryCount"	, String(connection.RetryCount));
+    printValue("RetryInterval"	, String(connection.RetryInterval));
+    printValue("TcpPort"	, String(connection.TcpPort));
+    
     Serial.println("---Operations:-------------------------"); 
-    for (const Operation& operation : slave.Operations)	
+    for (const Operation& operation : connection.Operations)	
     {
       printValue("\tPollingInterval", String(operation.PollingInterval));
       printValue("\tSlaveId"	, String(operation.SlaveId));

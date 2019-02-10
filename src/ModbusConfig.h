@@ -56,7 +56,7 @@ enum ModbusType { RTU, TCP, NONE };
 
 typedef struct{
   void* Connector;
-  ModbusType Type;
+  ModbusType Type = ModbusType :: NONE;
   String Connection;
   int RxPin;           	//default 
   int TxPin;            //default 
@@ -69,14 +69,14 @@ typedef struct{
   String Config; 	//default SERIAL_8N1
   int TcpPort; 		//default 
   OperationsType Operations;
-} Slave;
+} Connection;
 
-typedef std::vector<Slave> Slaves;
+typedef std::vector<Connection> Connections;
 
 /*
     @brief  Callback function to process an operation polling interval.
 */
-typedef void (*PHandler)(Slave* slave, Operation* operation);
+typedef void (*PHandler)(Connection* connection, Operation* operation);
 
 /**
      The ModbusConfig class.
@@ -132,7 +132,7 @@ class ModbusConfig
     DynamicJsonDocument *doc;	
     char* filename;  
     String json;	
-    Slaves slaves;
+    Connections connections;
  
  protected:
 
