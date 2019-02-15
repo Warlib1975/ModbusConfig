@@ -1,5 +1,6 @@
 /* 
- *  The example shows how to work with a single RS485 interface using Modbus RTU and configure by ModbusConfig. 
+ *  The example shows how to work with a single RS485 interface using Modbus RTU and configure by ModbusConfig.
+    ESP8266 microcontroller 
 */ 
 
 #include <ArduinoJson.h>
