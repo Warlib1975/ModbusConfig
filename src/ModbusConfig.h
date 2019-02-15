@@ -40,13 +40,13 @@
 bool processJsonError(int error);
 
 typedef struct{
-  int PollingInterval;  //default 
-  unsigned long lastPolling; //
-  int SlaveId;
+  int PollingInterval;      //default 5000
+  unsigned long lastPolling;
+  int SlaveId;              //default 1
   void* Modbus;
   int Function;
   int Address;
-  int Len;        	//default 
+  int Len;
   String DisplayName;
 } Operation;
 
@@ -58,16 +58,17 @@ typedef struct{
   void* Connector;
   ModbusType Type = ModbusType :: NONE;
   String Connection;
-  int RxPin;           	//default 
-  int TxPin;            //default 
-  int RetryCount;    	//default 
-  int RetryInterval; 	//default 
-  int PollingInterval; 	//default 
+  int RxPin;           	    //default -1
+  int TxPin;                //default -1
+  int HardwareSerial = -1;  //Hardware port number or -1 for SoftwareSerial  
+  int RetryCount;    	    //default 10
+  int RetryInterval; 	    //default 1000
+  int PollingInterval; 	    //default 5000
   unsigned long lastPolling; //
   String HwId;
-  int BaudRate; 	//default 
-  String Config; 	//default SERIAL_8N1
-  int TcpPort; 		//default 
+  int BaudRate; 	        //default 9600
+  String Config; 	        //SERIAL_8N1
+  int TcpPort; 		        //default -1 
   OperationsType Operations;
 } Connection;
 

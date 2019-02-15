@@ -1,4 +1,8 @@
 #include <ArduinoJson.h>
+/*
+ * ModbusConfig test example for ESP8266 boards. For Arduino just remove #include <ESP8266WiFi.h> 
+*/
+
 #include <ESP8266WiFi.h>
 #include "ModbusConfig.h";
 #include "EspFS.h";

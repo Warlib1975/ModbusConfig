@@ -62,17 +62,18 @@ bool ModbusConfig::parseConfig(String json)
     Connection connection; 
     connection.Connection 	  = connectionJSON["Connection"].as<String>();
     String type 		          = connectionJSON["Type"].as<String>();
+    connection.HardwareSerial = connectionJSON["HardwareSerial"] | -1;  //.as<int>();  //
     connection.Type		        = (type == "TCP") ? ModbusType::TCP : ModbusType::RTU;
-    connection.PollingInterval 	= connectionJSON["PollingInterval"].as<int>();
+    connection.PollingInterval 	= connectionJSON["PollingInterval"] | 5000;  //.as<int>(); //
     connection.HwId 		      = connectionJSON["HwId"].as<String>();
-    connection.BaudRate 		  = connectionJSON["BaudRate"].as<int>();
-    connection.Config 		    = connectionJSON["Config"].as<String>();
+    connection.BaudRate 		  = connectionJSON["BaudRate"] | 9600; //.as<int>(); //
+    connection.Config 		    = connectionJSON["Config"].as<String>(); //
     connection.Config 		    = (connection.Config == "") ? "SERIAL_8N1" : connection.Config;
-    connection.RxPin 		      = connectionJSON["RxPin"].as<int>(); // default value doesnt't work in v.6 beta | -1;
-    connection.TxPin 		      = connectionJSON["TxPin"].as<int>(); // default value doesnt't work in v.6 beta | -1;
-    connection.RetryCount 	  = connectionJSON["RetryCount"].as<int>();
-    connection.RetryInterval 	= connectionJSON["RetryInterval"].as<int>();
-    connection.TcpPort 		    = connectionJSON["TcpPort"].as<int>();
+    connection.RxPin 		      = connectionJSON["RxPin"] | -1; //.as<int>(); //  | -1;
+    connection.TxPin 		      = connectionJSON["TxPin"] | -1; //.as<int>(); //  | -1;
+    connection.RetryCount 	  = connectionJSON["RetryCount"] | 10; //.as<int>(); //
+    connection.RetryInterval 	= connectionJSON["RetryInterval"] | 1000; //.as<int>(); //
+    connection.TcpPort 		    = connectionJSON["TcpPort"] | -1; //.as<int>(); //
     connection.lastPolling	= 0;
 
     /*if (minconnectionPollingInterval > connection.PollingInterval)
@@ -84,14 +85,12 @@ bool ModbusConfig::parseConfig(String json)
     Operation operation;
     for (int i=0; i<ops.size(); i++) {
       JsonObject operationJSON = ops[i];
-      operation.PollingInterval = operationJSON["PollingInterval"].as<int>();
-      operation.SlaveId 	      = operationJSON["SlaveId"].as<int>();
-      //const char* function 	  = operationJSON["Function"].as<char*>();
-      operation.Function 	      = operationJSON["Function"].as<int>(); //StrToHex(function);
-      //const char* address 	  = operationJSON["Address"].as<char*>();
-      operation.Address 	      = operationJSON["Address"].as<int>(); //StrToHex(address);
-      operation.Len 		        = operationJSON["Len"].as<int>();
-      operation.DisplayName 	  = operationJSON["DisplayName"].as<String>();
+      operation.PollingInterval = operationJSON["PollingInterval"] | 5000; //.as<int>(); //
+      operation.SlaveId 	      = operationJSON["SlaveId"] | 1; //.as<int>(); //
+      operation.Function 	      = operationJSON["Function"]; //.as<int>(); // StrToHex(function);
+      operation.Address 	      = operationJSON["Address"]; //.as<int>(); // StrToHex(address);
+      operation.Len 		        = operationJSON["Len"]; //.as<int>(); //
+      operation.DisplayName 	  = operationJSON["DisplayName"].as<String>(); //
       operation.lastPolling	    = 0;
       connection.Operations.push_back(operation);
     }
@@ -141,6 +140,7 @@ void ModbusConfig::printConfig()
     String type = (connection.Type == ModbusType::TCP) ? "TCP" : "RTU";
     printValue("Type"		, type);
     printValue("HwId"		, connection.HwId);
+    printValue("HardwareSerial"	, String(connection.HardwareSerial));
     printValue("PollingInterval", String(connection.PollingInterval));
     printValue("RxPin"		, String(connection.RxPin));
     printValue("TxPin"		, String(connection.TxPin));
@@ -167,7 +167,7 @@ void ModbusConfig::printConfig()
 //isHex default value is false
 void ModbusConfig::printValue(String name, String value, bool isHex)
 {
-  if ((value != "null") && (value != "") && (value != "0")) //0 - default value for int 
+  if ((value != "null") && (value != "") && (value != "-1")) //-1 - default value for int 
   {
     String prefix = "";
     if (isHex)
