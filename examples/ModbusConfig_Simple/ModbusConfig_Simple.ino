@@ -10,7 +10,7 @@
 #define Num_of_Slaves 2 //Number of serial ports on the board
 #define Num_of_Ops    5 //Number of operations per serial port 
 
-//30 - is the maximum number of possible operations  
+//30 - is the maximum number of possible operations https://arduinojson.org/v6/assistant/ 
 const size_t capacity = 2*JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(4) + Num_of_Ops*JSON_OBJECT_SIZE(6) + Num_of_Slaves*JSON_OBJECT_SIZE(11) + 830;
 StaticJsonDocument<capacity> doc;
 
