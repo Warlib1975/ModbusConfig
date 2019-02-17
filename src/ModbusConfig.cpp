@@ -53,12 +53,14 @@ bool ModbusConfig::parseConfig(String json)
     return false;
   }
 
-  //JsonObject obj = doc->as<JsonObject>();
-  JsonArray arr = doc->as<JsonArray>();
+  JsonObject obj = doc->as<JsonObject>();
+  JsonArray modbus = obj["Modbus"];
+  //JsonArray arr = doc->as<JsonArray>();
 
   //Serial.println("--------------------------------------"); 
-  for (int i=0; i<arr.size(); i++) {
-    JsonObject connectionJSON = arr[i]["Connection"];
+  for (int i=0; i<modbus.size(); i++) {
+    //JsonObject connectionJSON = arr[i]["Connection"];
+    JsonObject connectionJSON = modbus[i];//doc["Modbus"][i];
     Connection connection; 
     connection.Connection 	  = connectionJSON["Connection"].as<String>();
     String type 		          = connectionJSON["Type"].as<String>();
@@ -81,7 +83,8 @@ bool ModbusConfig::parseConfig(String json)
       minconnectionPollingInterval = connection.PollingInterval; 
     }*/	
 
-    JsonArray ops = arr[i]["Connection"]["Ops"];
+    //JsonArray ops = arr[i]["Connection"]["Ops"];
+    JsonArray ops = connectionJSON["Ops"];
     Operation operation;
     for (int i=0; i<ops.size(); i++) {
       JsonObject operationJSON = ops[i];
