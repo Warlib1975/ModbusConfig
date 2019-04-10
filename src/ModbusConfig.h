@@ -39,45 +39,94 @@
 
 bool processJsonError(int error);
 
-typedef struct{
-  int PollingInterval;      //default 5000
-  unsigned long lastPolling;
+enum SensorType { Modbus, iWare, Analog, NONE };
+
+struct BaseOperation
+{
+	String HwId;                  //Sensor HwId or inventory number
+	int PollingInterval;      	  //default 5000
+	String Transform;		          //Formulas to transform input data
+	String DisplayName;           //Name to display 
+	String Location;              //Location of the sensor 
+  unsigned long lastPolling;    //Last polling in millis
+};
+
+struct AnalogSensor : BaseOperation
+{
+	int Channel; 			//ADC channel number
+	int GPIO; 			//GPIO number
+};
+
+struct iWareSensor : BaseOperation
+{
+};
+
+//typedef std::vector<iWareSensor*> iWareSensors;
+
+typedef std::vector<BaseOperation*> OperationsType;
+
+struct BaseConnection
+{
+  String Connection;
+  SensorType Sensor;
+  unsigned long lastPolling; //
+  int PollingInterval; 	    //default 5000
+  OperationsType Operations;
+};
+
+struct iWareConnection : BaseConnection
+{
+  int GPIO;
+  //iWareSensors Sensors; 
+};
+
+
+//typedef std::vector<AnalogSensor*> AnalogSensors; //Array of the analog sensors
+
+struct AnalogConnection : BaseConnection
+{
+  //AnalogSensors Sensors;
+};
+
+//typedef std::vector<iWareConnection*> iWareConnections;
+
+
+struct ModbusOperation : BaseOperation
+{
   int SlaveId;              //default 1
   void* Modbus;
   int Function;
   int Address;
   int Len;
-  String DisplayName;
-} Operation;
+};
 
-typedef std::vector<Operation> OperationsType;
+//typedef std::vector<ModbusOperation> OperationsType;
 
-enum ModbusType { RTU, TCP, NONE };
+enum ModbusType { RTU, TCP };
 
-typedef struct{
+struct ModbusConnection : BaseConnection
+{
   void* Connector;
-  ModbusType Type = ModbusType :: NONE;
-  String Connection;
+  ModbusType Type = ModbusType :: RTU;
   int RxPin;           	    //default -1
   int TxPin;                //default -1
   int HardwareSerial = -1;  //Hardware port number or -1 for SoftwareSerial  
   int RetryCount;    	    //default 10
   int RetryInterval; 	    //default 1000
-  int PollingInterval; 	    //default 5000
-  unsigned long lastPolling; //
   String HwId;
   int BaudRate; 	        //default 9600
   String Config; 	        //SERIAL_8N1
   int TcpPort; 		        //default -1 
-  OperationsType Operations;
-} Connection;
+//  OperationsType Operations;
+};
 
-typedef std::vector<Connection> Connections;
+typedef std::vector<BaseConnection*> Connections;
 
 /*
     @brief  Callback function to process an operation polling interval.
 */
-typedef void (*PHandler)(Connection* connection, Operation* operation);
+//typedef void (*PHandler)(Connection* connection, Operation* operation);
+typedef void (*OnSensorPollingHandler)(BaseConnection* connection, BaseOperation* operation);
 
 /**
      The ModbusConfig class.
@@ -108,7 +157,6 @@ class ModbusConfig
     bool parseConfig(String json);
     bool parseConfig();		
 
-
 /*!
     @brief  Print loaded and parsed config to Serial.
 */
@@ -129,7 +177,7 @@ class ModbusConfig
 */
     int StrToHex(const char* str);
  
-    PHandler pollingIntervalCallback;
+    OnSensorPollingHandler pollingIntervalCallback;
     DynamicJsonDocument *doc;	
     char* filename;  
     String json;	
@@ -141,7 +189,7 @@ class ModbusConfig
     //unsigned int minSlavePollingInterval = 0;
     //unsigned int lastPolling = 0;
     void printValue(String name, String value, bool isHex = false);
-
+    void printOperations(SensorType sensorType, OperationsType operations);
 };
 
 #endif
