@@ -1,12 +1,15 @@
 // Please read ModbusConfig.h for information about the liscence and authors
-
 #include "EspFS.h"
-#include <FS.h>   //http://esp8266.github.io/Arduino/versions/2.0.0/doc/filesystem.html
+#include "FS.h"   //http://esp8266.github.io/Arduino/versions/2.0.0/doc/filesystem.html
+
+#ifdef ESP32
+#include "SPIFFS.h"
+#endif
 
 EspFS::EspFS()
 {
   this->isSPIFFSInitialized = false;
-  this->initFS();	
+  //this->initFS(); //On ESP32 such initialization goes to permanent reboot.  
 }
 
 bool EspFS::loadTextFile()
@@ -59,7 +62,7 @@ bool EspFS::loadTextFile(char* filename)
 bool EspFS::initFS() 
 {
   //Initialize File System
-  if(SPIFFS.begin())
+  if (SPIFFS.begin())
   {
     Serial.println("SPIFFS Initialize....ok");
     isSPIFFSInitialized = true;
@@ -87,6 +90,7 @@ bool EspFS::formatFS()
   }
 }
 
+#ifdef ESP8266
 bool EspFS::showDir()
 {
   if (!isSPIFFSInitialized)
@@ -111,3 +115,4 @@ bool EspFS::showDir()
   Serial.print(str);
   return true;
 }
+#endif

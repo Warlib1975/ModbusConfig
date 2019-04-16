@@ -65,11 +65,11 @@ bool ModbusConfig::parseConfig(String json)
     connection->Connection 	      = connectionJSON["Connection"].as<String>();
     connection->Sensor            = SensorType :: Modbus;
     String type 		              = connectionJSON["Type"].as<String>();
-    connection->HardwareSerial    = connectionJSON["HardwareSerial"].as<int>();  // | -1;  //.as<int>();  //
+    connection->HardwareSerial    = connectionJSON["HardwareSerial"] | -1;  //.as<int>();  //
     connection->Type		          = (type == "TCP") ? ModbusType::TCP : ModbusType::RTU;
-    connection->PollingInterval 	= connectionJSON["PollingInterval"].as<int>(); // | 5000;  //.as<int>(); //
+    connection->PollingInterval 	= connectionJSON["PollingInterval"] | 60000;  //.as<int>(); //
     connection->HwId 		          = connectionJSON["HwId"].as<String>();
-    connection->BaudRate 		      = connectionJSON["BaudRate"].as<int>(); // | 9600; //.as<int>(); //
+    connection->BaudRate 		      = connectionJSON["BaudRate"] | 9600; //.as<int>(); //
     connection->Config 		        = connectionJSON["Config"].as<String>(); //
     connection->Config 		        = (connection->Config == "") ? "SERIAL_8N1" : connection->Config;
     connection->RxPin 		        = connectionJSON["RxPin"] | -1; //.as<int>(); //  | -1;
@@ -85,7 +85,7 @@ bool ModbusConfig::parseConfig(String json)
       JsonObject operationJSON = ops[j];
       ModbusOperation* operation = new ModbusOperation;
       operation->HwId            = "Empty";
-      operation->PollingInterval = operationJSON["PollingInterval"] | 5000; //.as<int>(); //
+      operation->PollingInterval = operationJSON["PollingInterval"] | 60000; //.as<int>(); //
       operation->SlaveId 	      = operationJSON["SlaveId"].as<int>(); //| 1; //
       operation->Function 	    = operationJSON["Function"].as<int>(); // StrToHex(function);
       operation->Address 	      = operationJSON["Address"].as<int>(); // StrToHex(address);
@@ -105,7 +105,8 @@ bool ModbusConfig::parseConfig(String json)
     iWareConnection* connection = new iWareConnection;
     connection->Sensor          = SensorType :: iWare; 
     connection->Connection 	    = connectionJSON["Connection"].as<String>();
-    connection->GPIO            = connectionJSON["GPIO"].as<int>();  // | -1;  //.as<int>();  //
+    connection->GPIO            = connectionJSON["GPIO"].as<int>() | -1;  //.as<int>();  //
+    connection->PollingInterval 	= connectionJSON["PollingInterval"] | 600000;  //.as<int>(); //
     connection->lastPolling	    = 0;
 
     JsonArray Sensors = connectionJSON["Sensors"];
@@ -113,7 +114,7 @@ bool ModbusConfig::parseConfig(String json)
       iWareSensor* sensor = new iWareSensor;
       JsonObject sensorJSON   = Sensors[j];
       sensor->HwId              = sensorJSON["HwId"].as<String>();
-      sensor->PollingInterval   = sensorJSON["PollingInterval"] | 5000; //.as<int>(); //
+      sensor->PollingInterval   = sensorJSON["PollingInterval"] | 60000; //.as<int>(); //
       sensor->DisplayName 	    = sensorJSON["DisplayName"].as<String>(); //
       sensor->Location 	        = sensorJSON["Location"].as<String>(); //
       sensor->Transform 	      = sensorJSON["Transform"].as<String>(); //
@@ -125,28 +126,55 @@ bool ModbusConfig::parseConfig(String json)
 
   JsonArray Analog = obj["Analog"];
   for (int i = 0; i < Analog.size(); i++) {
-    JsonObject connectionJSON = Analog[i];
+    JsonObject connectionJSON 	= Analog[i];
     AnalogConnection* connection = new AnalogConnection; 
+    connection->Connection 	    = connectionJSON["Connection"].as<String>();
+    connection->PollingInterval = connectionJSON["PollingInterval"] | 600000;  //.as<int>(); //
     connection->Sensor          = SensorType :: Analog;
     connection->lastPolling	    = 0;
 
     JsonArray Sensors = connectionJSON["Sensors"];
     for (int j = 0; j < Sensors.size(); j++) {
-      JsonObject sensorJSON = Sensors[j];
-      AnalogSensor* sensor = new AnalogSensor;
+      JsonObject sensorJSON 	= Sensors[j];
+      AnalogSensor* sensor 		= new AnalogSensor;
       sensor->HwId              = sensorJSON["HwId"].as<String>(); //.as<int>(); //
       sensor->PollingInterval   = sensorJSON["PollingInterval"] | 5000; //.as<int>(); //
       sensor->DisplayName 	    = sensorJSON["DisplayName"].as<String>(); //
       sensor->Location 	        = sensorJSON["Location"].as<String>(); //
-      sensor->Transform 	      = sensorJSON["Transform"].as<String>(); //
-      sensor->Channel 	        = sensorJSON["Channel"]; //
-      sensor->GPIO 	            = sensorJSON["GPIO"]; //
+      sensor->Transform 	    = sensorJSON["Transform"].as<String>(); //
+      sensor->Channel 	        = sensorJSON["Channel"] | -1; //
+      sensor->GPIO 	            = sensorJSON["GPIO"] | -1; //
       //connection->Sensors.push_back(sensor);
       connection->Operations.push_back(sensor);
     }
     this->connections.push_back(connection);
   }
+  
+  JsonArray Relay = obj["RelayOutput"];
+  for (int i = 0; i < Relay.size(); i++) 
+  {
+    JsonObject connectionJSON 	= Relay[i];
+    RelayConnection* connection = new RelayConnection; 
+    connection->Connection 	    = connectionJSON["Connection"].as<String>();
+    connection->PollingInterval = connectionJSON["PollingInterval"] | 600000;  //.as<int>(); //
+    connection->Sensor          = SensorType :: Relay;
+    connection->lastPolling	    = 0;
 
+    JsonArray Relays = connectionJSON["Relays"];
+    for (int j = 0; j < Relays.size(); j++) 
+	{
+      JsonObject sensorJSON 		= Relays[j];
+	  RelayOutput* sensor 		= new RelayOutput;
+      sensor->HwId              = sensorJSON["HwId"].as<String>(); //.as<int>(); //
+      sensor->PollingInterval   = sensorJSON["PollingInterval"] | 600000; //.as<int>(); //
+      sensor->DisplayName 	    = sensorJSON["DisplayName"].as<String>(); //
+      sensor->Location 	        = sensorJSON["Location"].as<String>(); //
+      sensor->GPIO 	            = sensorJSON["GPIO"] | -1; //
+      //connection->Sensors.push_back(sensor);
+      connection->Operations.push_back(sensor);
+    }
+    this->connections.push_back(connection);
+  }
   return true;
 }
 
@@ -215,6 +243,12 @@ void ModbusConfig::printOperations(SensorType sensorType, OperationsType operati
         printValue("\tGPIO"	, String(sensor->GPIO));
         break;
       }
+	  case SensorType::Relay:
+      {
+        RelayOutput* sensor = static_cast<RelayOutput*>(op);
+        printValue("\tGPIO"	, String(sensor->GPIO));
+        break;
+      }
       default:
         printValue("\nUnknown sensor type", "");
     }
@@ -259,6 +293,12 @@ void ModbusConfig::printConfig()
       case SensorType::Analog:
       {
         AnalogConnection* connection = static_cast<AnalogConnection*>(conn); 
+        printOperations(connection->Sensor, connection->Operations);
+        break;
+      }
+      case SensorType::Relay:
+      {
+        RelayConnection* connection = static_cast<RelayConnection*>(conn); 
         printOperations(connection->Sensor, connection->Operations);
         break;
       }

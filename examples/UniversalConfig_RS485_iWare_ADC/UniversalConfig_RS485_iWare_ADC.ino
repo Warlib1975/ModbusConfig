@@ -129,12 +129,16 @@ void jsonParsing(String json)
 
 void setup()
 {
-  Serial.begin(115200, SERIAL_8N1);
+  Serial.begin(9600);
+  fileSystem.initFS();
   
   modbusCfg.doc = &doc; //new DynamicJsonDocument(capacity);
   modbusCfg.pollingIntervalCallback = *pollingIntervalProcessor;
 
+  #ifdef ESP8266
   fileSystem.showDir();
+  #endif
+  
   readModbusConfig();
 }
 

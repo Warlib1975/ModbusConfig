@@ -39,16 +39,16 @@
 
 bool processJsonError(int error);
 
-enum SensorType { Modbus, iWare, Analog, NONE };
+enum SensorType { Modbus, iWare, Analog, Relay, DryContact, NONE };
 
 struct BaseOperation
 {
 	String HwId;                  //Sensor HwId or inventory number
 	int PollingInterval;      	  //default 5000
-	String Transform;		          //Formulas to transform input data
+	String Transform;		      //Formulas to transform input data
 	String DisplayName;           //Name to display 
 	String Location;              //Location of the sensor 
-  unsigned long lastPolling;    //Last polling in millis
+  unsigned long lastPolling;      //Last polling in millis
 };
 
 struct AnalogSensor : BaseOperation
@@ -59,6 +59,12 @@ struct AnalogSensor : BaseOperation
 
 struct iWareSensor : BaseOperation
 {
+	
+};
+
+struct RelayOutput : BaseOperation
+{
+	int GPIO; 			//GPIO number
 };
 
 //typedef std::vector<iWareSensor*> iWareSensors;
@@ -85,7 +91,12 @@ struct iWareConnection : BaseConnection
 
 struct AnalogConnection : BaseConnection
 {
-  //AnalogSensors Sensors;
+	
+};
+
+struct RelayConnection : BaseConnection
+{
+	
 };
 
 //typedef std::vector<iWareConnection*> iWareConnections;

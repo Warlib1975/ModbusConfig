@@ -74,8 +74,9 @@ class EspFS
     @brief   Show file list of the directory. 
     @return True if the filesystem initialization passed successfully, otherwise false.
 */
+#ifdef ESP8266
     bool showDir();
-
+#endif
 /*
     @brief   Convert char* string to int. 
     @param   str
