@@ -1,6 +1,7 @@
 // Please read ModbusConfig.h for information about the liscence and authors
 
 #include "ModbusConfig.h"
+//#include "Evaluator.h"
 
 bool processJsonError(int error)
 {
@@ -150,30 +151,31 @@ bool ModbusConfig::parseConfig(String json)
     this->connections.push_back(connection);
   }
   
-  JsonArray Relay = obj["RelayOutput"];
-  for (int i = 0; i < Relay.size(); i++) 
+  JsonArray relays = obj["RelayOutput"];
+  for (int i = 0; i < relays.size(); i++) 
   {
-    JsonObject connectionJSON 	= Relay[i];
-    RelayConnection* connection = new RelayConnection; 
-    connection->Connection 	    = connectionJSON["Connection"].as<String>();
-    connection->PollingInterval = connectionJSON["PollingInterval"] | 600000;  //.as<int>(); //
-    connection->Sensor          = SensorType :: Relay;
-    connection->lastPolling	    = 0;
+    JsonObject connectionJSON 	= relays[i];
+    //RelayConnection* connection = new RelayConnection; 
+	relayOutput 				= new RelayConnection; 
+    relayOutput->Connection 	    = connectionJSON["Connection"].as<String>();
+    relayOutput->PollingInterval = connectionJSON["PollingInterval"] | 600000;  //.as<int>(); //
+    relayOutput->Sensor          = SensorType :: Relay;
+    relayOutput->lastPolling	    = 0;
 
     JsonArray Relays = connectionJSON["Relays"];
     for (int j = 0; j < Relays.size(); j++) 
 	{
       JsonObject sensorJSON 		= Relays[j];
-	  RelayOutput* sensor 		= new RelayOutput;
+	  RelayOut* sensor 			= new RelayOut;
       sensor->HwId              = sensorJSON["HwId"].as<String>(); //.as<int>(); //
       sensor->PollingInterval   = sensorJSON["PollingInterval"] | 600000; //.as<int>(); //
       sensor->DisplayName 	    = sensorJSON["DisplayName"].as<String>(); //
       sensor->Location 	        = sensorJSON["Location"].as<String>(); //
       sensor->GPIO 	            = sensorJSON["GPIO"] | -1; //
       //connection->Sensors.push_back(sensor);
-      connection->Operations.push_back(sensor);
+      relayOutput->Operations.push_back(sensor);
     }
-    this->connections.push_back(connection);
+    this->connections.push_back(relayOutput);
   }
   return true;
 }
@@ -245,7 +247,7 @@ void ModbusConfig::printOperations(SensorType sensorType, OperationsType operati
       }
 	  case SensorType::Relay:
       {
-        RelayOutput* sensor = static_cast<RelayOutput*>(op);
+        RelayOut* sensor = static_cast<RelayOut*>(op);
         printValue("\tGPIO"	, String(sensor->GPIO));
         break;
       }
@@ -318,4 +320,89 @@ void ModbusConfig::printValue(String name, String value, bool isHex)
     }
     Serial.println(name + ": " + prefix + value);
   }
+}
+
+//void ModbusConfig::void math_operation(math_op op, String &prev_val, String &current_val, float &value)
+void ModbusConfig::math_operation(math_op op, float &prev_val, String &current_val, float &value)
+{
+  if (prev_val != -16101975) //Check if the default value has changed
+  {
+    if (current_val.length() > 0)
+    {
+      //float first = prev_val.toFloat();
+      float second = current_val.toFloat();
+      switch (op)
+      {
+      case math_op::Mul:
+        value = prev_val * second;
+        break;
+      case math_op::Add:
+        value = prev_val + second;
+        break;
+      case math_op::Div:
+        value = prev_val / second;
+        break;
+      case math_op::Sub:
+        value = prev_val - second;
+        break;
+      case math_op::None:
+        printf("There is no operation.");
+      }
+	  prev_val = value;
+      current_val = "";
+    }
+  }
+  else
+  {
+    if (current_val.length() > 0)
+    {
+      prev_val = current_val.toFloat();
+      current_val = "";
+    }
+  }
+}
+
+float ModbusConfig::Eval(String expr, float value)
+{
+  String pattern = "%V%";
+  int pos = expr.indexOf(pattern);
+  if (pos == -1)
+  {
+    expr = "%V%*" + expr;  
+  }
+  expr.replace("%V%", String(value));
+  String val = "";
+  math_op last_op = math_op::None;
+  float prev_val = -16101975;//Set the some default value to check if the value has changed 
+  value = 0;
+  for (int i = 0; i < expr.length(); i++)
+  {
+    switch (expr[i])
+    {
+    case '*':
+      math_operation(last_op, prev_val, val, value);
+      last_op = math_op::Mul;
+      break;
+    case '+':
+      math_operation(last_op, prev_val, val, value);
+      last_op = math_op::Add;
+      break;
+    case '/':
+      math_operation(last_op, prev_val, val, value);
+      last_op = math_op::Div;
+      break;
+    case '-':
+      math_operation(last_op, prev_val, val, value);
+      last_op = math_op::Sub;
+      break;
+    default:
+      if (isdigit(expr[i]) || expr[i] == '.' || expr[i] == ',')
+      {
+        val += (expr[i] == ',') ? '.' : expr[i];
+      }
+      break;
+    }
+  }
+  math_operation(last_op, prev_val, val, value);
+  return value;
 }

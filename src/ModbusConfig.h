@@ -29,6 +29,7 @@
 #define ModbusConfig_h
 
 #include "Arduino.h"
+//#include "Evaluator.h"
 
 #include <ArduinoJson.h>
 
@@ -62,7 +63,7 @@ struct iWareSensor : BaseOperation
 	
 };
 
-struct RelayOutput : BaseOperation
+struct RelayOut : BaseOperation
 {
 	int GPIO; 			//GPIO number
 };
@@ -114,6 +115,8 @@ struct ModbusOperation : BaseOperation
 //typedef std::vector<ModbusOperation> OperationsType;
 
 enum ModbusType { RTU, TCP };
+
+enum math_op { Mul, Add, Div, Sub, None };
 
 struct ModbusConnection : BaseConnection
 {
@@ -177,6 +180,8 @@ class ModbusConfig
     @brief  Polling interval periodical checker and callback function executer if some operation should be processed.
 */
     void loopModbusConfig();
+	
+	float Eval(String expr, float value);
 
 
 /*
@@ -193,6 +198,7 @@ class ModbusConfig
     char* filename;  
     String json;	
     Connections connections;
+	RelayConnection* relayOutput;
  
  protected:
 
@@ -201,6 +207,7 @@ class ModbusConfig
     //unsigned int lastPolling = 0;
     void printValue(String name, String value, bool isHex = false);
     void printOperations(SensorType sensorType, OperationsType operations);
+	void math_operation(math_op op, float &prev_val, String &current_val, float &value);
 };
 
 #endif

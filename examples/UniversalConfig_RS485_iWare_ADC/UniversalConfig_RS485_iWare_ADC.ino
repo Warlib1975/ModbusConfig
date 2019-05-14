@@ -138,8 +138,18 @@ void setup()
   #ifdef ESP8266
   fileSystem.showDir();
   #endif
-  
-  readModbusConfig();
+
+  //readModbusConfig();
+
+  String expression = "%V%*1.1+0.5";
+  float value = modbusCfg.Eval(expression, 10.5);
+  Serial.println("Value of " + expression + ": " + String(value)); 
+  expression = "1.1+2.2*%V%+0.5";
+  value = modbusCfg.Eval(expression, 10.5);
+  Serial.println("Value of " + expression + ": " + String(value)); 
+  expression = "1+0.5";
+  value = modbusCfg.Eval(expression, 10);
+  Serial.println("Value of " + expression + ": " + String(value)); 
 }
 
 void loop()

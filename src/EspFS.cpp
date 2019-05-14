@@ -1,9 +1,10 @@
 // Please read ModbusConfig.h for information about the liscence and authors
 #include "EspFS.h"
-#include "FS.h"   //http://esp8266.github.io/Arduino/versions/2.0.0/doc/filesystem.html
+#include "FS.h"   	//http://esp8266.github.io/Arduino/versions/2.0.0/doc/filesystem.html
+					
 
 #ifdef ESP32
-#include "SPIFFS.h"
+#include "SPIFFS.h" //https://raw.githubusercontent.com/espressif/arduino-esp32/master/libraries/SPIFFS/examples/SPIFFS_Test/SPIFFS_Test.ino
 #endif
 
 EspFS::EspFS()
