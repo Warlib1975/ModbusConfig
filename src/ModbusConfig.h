@@ -49,7 +49,9 @@ struct BaseOperation
 	String Transform;		      //Formulas to transform input data
 	String DisplayName;           //Name to display 
 	String Location;              //Location of the sensor 
-  unsigned long lastPolling;      //Last polling in millis
+    unsigned long lastPolling;      //Last polling in millis
+  	unsigned long lastInstantMillis;
+	void* Tag; 					  //Any data to save information for calculation average value or filtering
 };
 
 struct AnalogSensor : BaseOperation
@@ -78,7 +80,9 @@ struct BaseConnection
   SensorType Sensor;
   unsigned long lastPolling; //
   int PollingInterval; 	    //default 5000
+  String Transform;		      //Formulas to transform input data
   OperationsType Operations;
+  unsigned long lastInstantMillis;
 };
 
 struct iWareConnection : BaseConnection
@@ -142,6 +146,7 @@ typedef std::vector<BaseConnection*> Connections;
 //typedef void (*PHandler)(Connection* connection, Operation* operation);
 typedef void (*OnSensorPollingHandler)(BaseConnection* connection, BaseOperation* operation);
 
+
 /**
      The ModbusConfig class.
 */
@@ -193,7 +198,8 @@ class ModbusConfig
 */
     int StrToHex(const char* str);
  
-    OnSensorPollingHandler pollingIntervalCallback;
+    OnSensorPollingHandler pollingIntervalCallback; //Callback the method corresponding interval specified in config for the sensor
+    OnSensorPollingHandler instantCallback; //Callback the method to calculate average value.
     DynamicJsonDocument *doc;	
     char* filename;  
     String json;	
