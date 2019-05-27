@@ -64,3 +64,25 @@ There are several sections in the configuration file:
     }
   ]
 ```  
+Main section describes configuration for the RS485 interface. In case of ESP32 it can has 3 UART (hardware), so, it's possible to use no more than 3 pcs. RS485 interface card. Of course, possible to use SoftwareSerial, but reliability is less, than hardware one. 
+
+### Modbus main section
+- "Connection": "tty0",
+- "Type" - RS485 type: "RTU" or "TCP".
+- "PollingInterval" - interval of polling equipment in milliseconds. Usually used "PollingInterval" in Operations sections.
+- "RetryCount" - how many times poll a equipment in case of error,
+- "RetryInterval" - interval in milliseconds between polling a equipment in case of error,
+- "HwId" - some human readable name of the equipment. E.g. for inventarization (Assets management). 
+- "RxPin" - GPIO for RX,
+- "TxPin" - GPIO for TX,
+- "BaudRate" - connection speed,
+- "Config" - port configuration ("SERIAL_8N1" by default),
+- "HardwareSerial" - which hardware serial channel is used. E.g. for ESP32 it could be 2,
+
+### Modbus operations section
+There are several modbus operations are possible. Operations - it's some polling action to get information from modbus equipment. To get info from the modbus device you need to know:
+- A function number 
+  - 0x01 - Read Coils
+  - 0x02 - Read Discrete Inputs
+  - 0x03 - Read Holding Registers
+  - 0x04 - Read Input Registers
