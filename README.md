@@ -199,3 +199,64 @@ Analog sensors configuration have similar structure as iWare. Usually, analog se
 So, only two parameters need to be described more precisely:
 - "Channel" - number of ADC channel. E.g. - 6.
 - "GPIO" - number of GPIO. E.g. - 33.
+
+### Relay output
+
+To describe outputs of a relay connected directly to a microcontroller needs only one parameter - GPIO of the pin.   
+```
+"RelayOutput": [
+    {
+      "Connection": "Relay_test",
+      "Relays": [
+        {
+          "HwId": "GPIO_26",
+          "GPIO": 25,
+          "DisplayName": "Ventilation_1",
+          "Location": "ServerRoom01_Chassis1"
+        },
+        {
+          "HwId": "GPIO_26",
+          "GPIO": 26,
+          "DisplayName": "Ventilation_2",
+          "Location": "ServerRoom01_Chassis2"
+        },
+        {
+          "HwId": "GPIO_27",
+          "GPIO": 27,
+          "DisplayName": "Ventilation_3",
+          "Location": "ServerRoom01_Chassis3"
+        },
+        {
+          "HwId": "GPIO_13",
+          "GPIO": 13,
+          "DisplayName": "Ventilation_4",
+          "Location": "ServerRoom01_Chassis4"
+        },
+        {
+          "HwId": "GPIO_15",
+          "GPIO": 15,
+          "DisplayName": "Ventilation_5",
+          "Location": "ServerRoom01_Chassis5"
+        },
+        {
+          "HwId": "GPIO_12",
+          "GPIO": 12,
+          "DisplayName": "Ventilation_6",
+          "Location": "ServerRoom01_Chassis6"
+        },
+        {
+          "HwId": "GPIO_33",
+          "GPIO": 14,
+          "DisplayName": "Ventilation_7",
+          "Location": "ServerRoom01_Chassis7"
+        },
+        {
+          "HwId": "GPIO_34",
+          "GPIO": 34,
+          "DisplayName": "Ventilation_7",
+          "Location": "ServerRoom01_Chassis7"
+        }
+      ]
+    }
+  ]
+  ```
