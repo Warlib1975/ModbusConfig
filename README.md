@@ -3,7 +3,7 @@ ModbusConfig library for ESP8266/ESP32/Arduino.
 
 The library process a sensors configuration file in JSON format and execute operations described in the file. 
 
-# Description
+## Description
 
 Library supports not only Modbus equipment, but iWare and analog also. 
 
@@ -17,14 +17,14 @@ When a device (slave) polling interval has reached, the libriary invoke the call
 
 JSON configuration file should be uploaded to SPIFFS file system on ESP8266/ESP32 boards using corresponding tool: http://esp8266.github.io/Arduino/versions/2.0.0/doc/filesystem.html.  
 
-# Config file example
+## Config file example
 There are several sections in the configuration file:
 - Modbus devices
 - iWare sensors (DS18B20, DS18S20 and etc.)
 - Analog sensors (current 4..20 mA)
 - Relays output
 
-## Modbus configuration
+### Modbus configuration
 ```
   "Modbus": [
     {
@@ -66,7 +66,7 @@ There are several sections in the configuration file:
 ```  
 Main section describes configuration for the RS485 interface. In case of ESP32 it can has 3 UART (hardware), so, it's possible to use no more than 3 pcs. RS485 interface card. Of course, possible to use SoftwareSerial, but reliability is less, than hardware one. 
 
-### Modbus main section
+#### Modbus main section
 - "Connection": "tty0",
 - "Type" - RS485 type: "RTU" or "TCP".
 - "PollingInterval" - an interval of polling equipment in milliseconds. Usually used "PollingInterval" in Operations sections.
@@ -79,7 +79,7 @@ Main section describes configuration for the RS485 interface. In case of ESP32 i
 - "Config" - port configuration ("SERIAL_8N1" by default),
 - "HardwareSerial" - which hardware serial channel is used. E.g. for ESP32 it could be 2,
 
-### Modbus operations section
+#### Modbus operations section
 There are several modbus operations are possible. Operations - it's some polling action to get information from modbus equipment. To get info from the modbus device you need to know:
 - Slave id - ID of the Modbus equipment
 - A function: 
