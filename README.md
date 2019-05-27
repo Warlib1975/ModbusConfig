@@ -69,7 +69,7 @@ Main section describes configuration for the RS485 interface. In case of ESP32 i
 ### Modbus main section
 - "Connection": "tty0",
 - "Type" - RS485 type: "RTU" or "TCP".
-- "PollingInterval" - interval of polling equipment in milliseconds. Usually used "PollingInterval" in Operations sections.
+- "PollingInterval" - an interval of polling equipment in milliseconds. Usually used "PollingInterval" in Operations sections.
 - "RetryCount" - how many times poll a equipment in case of error,
 - "RetryInterval" - interval in milliseconds between polling a equipment in case of error,
 - "HwId" - some human readable name of the equipment. E.g. for inventarization (Assets management). 
@@ -81,8 +81,21 @@ Main section describes configuration for the RS485 interface. In case of ESP32 i
 
 ### Modbus operations section
 There are several modbus operations are possible. Operations - it's some polling action to get information from modbus equipment. To get info from the modbus device you need to know:
-- A function number 
+- Slave id - ID of the Modbus equipment
+- A function: 
   - 0x01 - Read Coils
   - 0x02 - Read Discrete Inputs
   - 0x03 - Read Holding Registers
   - 0x04 - Read Input Registers
+- A register address
+- Len of the data to read from a register
+
+Sections in configuration file looks like:
+- "PollingInterval" - an interval of polling registers of an equipment in milliseconds.
+- "SlaveId" - RS 485 slave ID number,
+- "Function" - number of function,
+- "Address" - a register address,
+- "Len" - len of the data to read,
+- "Transform" - formula to transform readed data. E.g. if you specify "0.1", it means that value was readed from the register needs to be multiply by 0.1. You can specify the same formula another way: "%V%/10" - %V% will be replaced by value readed from a sensor and divided by 10. The formula can be simple:   
+- "Location" some location description. E.g. "Warehouse_shelf_10"
+- "DisplayName" - some human readable name to display. E.g. "Temp".
