@@ -97,5 +97,70 @@ Sections in configuration file looks like:
 - "Address" - a register address,
 - "Len" - len of the data to read,
 - "Transform" - formula to transform readed data. E.g. if you specify "0.1", it means that value was readed from the register needs to be multiply by 0.1. You can specify the same formula another way: "%V%/10" - %V% will be replaced by value readed from a sensor and divided by 10. The formula can be simple:   
-- "Location" some location description. E.g. "Warehouse_shelf_10"
+- "Location" - some location description. E.g. "Warehouse_shelf_10".
 - "DisplayName" - some human readable name to display. E.g. "Temp".
+
+###iWare sensors
+
+The structure for the iWare sensors looks similar to modbus: main section to describe interface and some common properties and "Sensors" sections - a little bit equal to "Operations" in Mobus. 
+
+```
+  "iWare": [
+    {
+      "GPIO": 32,
+      "PollingInterval": 60000,
+      "Connection": "iWare_GPIO32",
+	  "Transform": "",
+      "Sensors": [
+        {
+          "HwId": "28B11346920D02A7",
+          "PollingInterval": 60000,
+          "DisplayName": "Equipment2348",
+          "Location": "Warehouse1_Shelf1",
+          "Transform": ""
+        },
+        {
+          "HwId": "28FF6C7997090341",
+          "PollingInterval": 60000,
+          "DisplayName": "Equipment1234",
+          "Location": "Warehouse1_Shelf2",
+          "Transform": ""
+        }
+      ]
+    },
+    {
+      "GPIO": 33,
+      "PollingInterval": 120000,
+      "Connection": "iWare_GPIO33",
+	  "Transform": "",
+      "Sensors": [
+        {
+          "HwId": "28B11346920D02A7",
+          "PollingInterval": 60000,
+          "DisplayName": "Equipment2348",
+          "Location": "Warehouse2_Shelf1",
+          "Transform": ""
+        },
+        {
+          "HwId": "28FF6C7997090341",
+          "PollingInterval": 60000,
+          "DisplayName": "Equipment1234",
+          "Location": "Warehouse2_Shelf2",
+          "Transform": ""
+        }
+      ]
+    }
+  ]
+```
+#### iWare main section
+- "GPIO" - GPIO of the microcontroller used as iWare interface. E.g. 32 (without quotes),
+- "PollingInterval" - an interval of polling iWare sensor in milliseconds. In case of iWare devices it's important to have such parameter at the level of interface description since sometimes there is no reasons to specify sensors parameters. E.g. iWare devices on the bus can be scanned, so, if you just need to send sensors data to a cloud, there is no need to create sensor section for each scanned sensor.   
+- "Connection" - some name of the interface "iWare_GPIO32",
+- "Transform" - global formula to transform readed value.  
+
+#### iWare sensors section
+- "HwId" - each iWare device has their own unique ID. E.g. "28B11346920D02A7",
+- "PollingInterval"- an interval of polling iWare sensor in milliseconds,
+- "DisplayName"- some human readable name to display. E.g. "Temp".
+- "Location" - some location description. E.g. "Warehouse_shelf_10".
+- "Transform"  - formula to transform readed data (see upper).
