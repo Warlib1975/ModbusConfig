@@ -100,7 +100,7 @@ Sections in configuration file looks like:
 - "Location" - some location description. E.g. "Warehouse_shelf_10".
 - "DisplayName" - some human readable name to display. E.g. "Temp".
 
-###iWare sensors
+### iWare sensors
 
 The structure for the iWare sensors looks similar to modbus: main section to describe interface and some common properties and "Sensors" sections - a little bit equal to "Operations" in Mobus. 
 
@@ -164,3 +164,38 @@ The structure for the iWare sensors looks similar to modbus: main section to des
 - "DisplayName"- some human readable name to display. E.g. "Temp".
 - "Location" - some location description. E.g. "Warehouse_shelf_10".
 - "Transform"  - formula to transform readed data (see upper).
+
+### Analog sensors
+
+Analog sensors configuration have similar structure as iWare. Usually, analog sensors connected to specific ADC channel (GPIO) on a microcontroller. It can be several ADC channels on a microcontroller. Ana log sensors connect directly to specific GPIO.  
+```
+  "Analog": [
+    {
+      "PollingInterval": 120000,
+      "Connection": "Analog_test",
+      "Sensors": [
+        {
+          "HwId": "1234",
+          "Channel": 6,
+          "GPIO": 33,
+          "PollingInterval": 60000,
+          "DisplayName": "CurrenToVoltage1",
+          "Location": "ServerRoom10_Chassis1",
+          "Transform": "%V%+0.7"
+        },
+        {
+          "HwId": "4321",
+          "Channel": 7,
+          "GPIO": 34,
+          "PollingInterval": 60000,
+          "DisplayName": "CurrenToVoltage2",
+          "Location": "ServerRoom11_Chassis1",
+          "Transform": "%V%+0.7"
+        }
+      ]
+    }
+  ]
+  ```
+So, only two parameters need to be described more precisely:
+- "Channel" - number of ADC channel. E.g. - 6.
+- "GPIO" - number of GPIO. E.g. - 33.
