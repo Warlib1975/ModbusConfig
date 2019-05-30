@@ -7,7 +7,7 @@
 #######################################
 
 ModbusConfig	KEYWORD1
-Slave		KEYWORD1
+Slave	KEYWORD1
 Operation	KEYWORD1
 
 #######################################
@@ -15,7 +15,7 @@ Operation	KEYWORD1
 #######################################
 
 parseConfig	KEYWORD2
-printConfig             KEYWORD2
+printConfig	KEYWORD2
 loopModbusConfig	KEYWORD2
 
 #######################################
